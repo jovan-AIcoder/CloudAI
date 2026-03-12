@@ -166,7 +166,7 @@ CloudAI/
 │
 ├── roc_curve.png
 ├── screenshot.png
-├── CloudAI.py        # main program
+├── CloudAI.py        # main program (double-click this file to run)
 └── README.md
 ```
 
