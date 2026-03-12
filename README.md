@@ -144,8 +144,7 @@ CloudAI/
 │   └── clouds_test/
 │
 ├── GUIassets/
-│   ├── logo_2.jpeg
-│   └── no_cloud_available.jpeg
+│   
 │
 ├── class_labels.json
 ├── cloud_classifier_model.h5
