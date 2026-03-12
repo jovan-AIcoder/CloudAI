@@ -44,7 +44,7 @@ Features:
 * Select a cloud image from your computer
 * Automatic preprocessing (center crop + resize to **256×256**)
 * CNN inference
-* Confidence visualization using a **Stockfish-style evaluation bar**
+* Confidence visualization
 * Predicted cloud category display
 
 Example interface:
