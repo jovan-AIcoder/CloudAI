@@ -130,16 +130,6 @@ While accuracy appears moderate, it reflects the **intrinsic ambiguity of cloud 
 
 ![ROC Curve](roc_curve.png)
 
-| Cloud Type             | AUC   |
-| ---------------------- | ----- |
-| Cirriform clouds       | ~0.84 |
-| Clear sky              | ~0.99 |
-| Cumulonimbus clouds    | ~0.99 |
-| Cumulus clouds         | ~0.88 |
-| High cumuliform clouds | ~0.80 |
-| Stratiform clouds      | ~0.95 |
-| Stratocumulus clouds   | ~0.88 |
-
 The model detects **strong visual signatures of convective systems**, particularly cumulonimbus clouds.
 
 ---
