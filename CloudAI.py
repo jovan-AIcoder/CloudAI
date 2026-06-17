@@ -1,139 +1,285 @@
-# CloudAI - Tkinter Dark Mode Version
-import tkinter as tk
-from tkinter import filedialog, messagebox
-from tkinter import ttk
-from PIL import Image, ImageTk
+import PySimpleGUI as sg
+from PIL import Image
 import inference
-import ctypes
+import io
+import numpy as np
 import time
+
 MAX_VALUE = 100
 model = inference.LoadModel()
-myappid = "cloudai.classifier.v1"
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-# bar animation function
-def animate_bar(value):
-    progress["value"] = 0
-    for i in range(value):
-        progress["value"] = i
-        time.sleep(0.01)
-        root.update_idletasks()
 
-# window
-root = tk.Tk()
-root.title("CloudAI - Cloud Image Classifier")
-window_width = 400
-window_height = 700
+current_image = None
 
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
 
-x = (screen_width // 2) - (window_width // 2)
-y = (screen_height // 2) - (window_height // 2)
+# =====================================
+# Convert image file to bytes
+# =====================================
+def image_to_bytes(path, size=None):
+    img = Image.open(path)
 
-root.geometry(f"{window_width}x{window_height}+{x}+{y}")
-root.iconbitmap("GUIassets/logo.ico")
-root.configure(bg="black")
+    if size:
+        img = img.resize(size)
 
-# ttk style
-style = ttk.Style()
-style.theme_use("default")
+    bio = io.BytesIO()
+    img.save(bio, format="PNG")
 
-style.configure("white.Horizontal.TProgressbar",
-                background="white",
-                troughcolor="black",
-                bordercolor="black",
-                lightcolor="white",
-                darkcolor="white")
+    return bio.getvalue()
 
-# logo
-logo_img = Image.open("GUIassets/logo_2.jpeg").resize((100,100))
-logo_photo = ImageTk.PhotoImage(logo_img)
 
-logo_label = tk.Label(root, image=logo_photo, bg="black")
-logo_label.pack()
+# =====================================
+# Convert numpy array to bytes
+# =====================================
+def array_to_bytes(array):
 
-title_label = tk.Label(root, text="CloudAI", font=("Helvetica",24),
-                       fg="white", bg="black")
-title_label.pack()
-
-subtitle = tk.Label(root, text="AI Cloud Image Classifier",
-                    font=("Helvetica",14),
-                    fg="white", bg="black")
-subtitle.pack()
-
-# select button
-def select_image():
-
-    file_path = filedialog.askopenfilename(
-        title="Select Cloud Image",
-        filetypes=[("Image Files","*.png *.jpg *.jpeg")]
+    img = Image.fromarray(
+        np.uint8(array)
     )
 
-    if not file_path:
-        return
+    bio = io.BytesIO()
+    img.save(bio, format="PNG")
 
-    if not inference.check_image(file_path):
-        messagebox.showerror("Error","Please select a valid image file")
-        return
+    return bio.getvalue()
 
-    # preview
-    img = Image.open(file_path).resize((256,256))
-    photo = ImageTk.PhotoImage(img)
 
-    image_label.config(image=photo)
-    image_label.image = photo
+# =====================================
+# Layout
+# =====================================
+sg.theme("DarkBlack")
 
-    # inference
-    cloud_type, confidence = model.inference(file_path)
-    confidence_percent = int(confidence*100)
+layout = [
 
-    confidence_label.config(text=f"Confidence: {confidence_percent}%")
-    animate_bar(confidence_percent)
-    cloud_label.config(text=cloud_type)
+    [
+        sg.Image(
+            data=image_to_bytes(
+                "GUIassets/logo_2.jpeg",
+                (100, 100)
+            )
+        )
+    ],
 
-# button
-select_button = tk.Button(root,
-                          text="Select Cloud Image",
-                          command=select_image,
-                          bg="#222222",
-                          fg="white",
-                          activebackground="#333333",
-                          activeforeground="white")
-select_button.pack(pady=10)
+    [
+        sg.Text(
+            "CloudAI",
+            font=("Arial", 24),
+            text_color="white"
+        )
+    ],
 
-# preview image
-default_img = Image.open("GUIassets/no_cloud_available.jpeg").resize((256,256))
-default_photo = ImageTk.PhotoImage(default_img)
+    [
+        sg.Text(
+            "AI Cloud Image Classifier",
+            font=("Arial", 12),
+            text_color="white"
+        )
+    ],
 
-image_label = tk.Label(root, image=default_photo, bg="black")
-image_label.pack()
+    [
+        sg.Button(
+            "Select Cloud Image",
+            key="-SELECT-"
+        ),
 
-# confidence
-confidence_label = tk.Label(root,
-                            text="Confidence: 0%",
-                            fg="white",
-                            bg="black")
-confidence_label.pack()
+        sg.Button(
+            "Grad-CAM Analysis",
+            key="-GRADCAM-",
+            disabled=True
+        )
+    ],
 
-# progressbar
-progress = ttk.Progressbar(root,
-                           style="white.Horizontal.TProgressbar",
-                           length=250,
-                           maximum=MAX_VALUE)
-progress.pack(pady=5)
+    [
+        sg.Image(
+            data=image_to_bytes(
+                "GUIassets/no_cloud_available.jpeg",
+                (256, 256)
+            ),
+            key="-IMAGE-"
+        )
+    ],
 
-# cloud type
-cloud_title = tk.Label(root,
-                       text="Cloud Type:",
-                       fg="white",
-                       bg="black")
-cloud_title.pack()
+    [
+        sg.Text(
+            "Confidence: 0%",
+            key="-CONFIDENCE-",
+            text_color="white"
+        )
+    ],
 
-cloud_label = tk.Label(root,
-                       text="N/A",
-                       font=("Arial",20),
-                       fg="white",
-                       bg="black")
-cloud_label.pack()
+    [
+        sg.ProgressBar(
+            MAX_VALUE,
+            orientation="h",
+            size=(30, 20),
+            key="-PROGRESS-",
+            bar_color=("white", "black")
+        )
+    ],
 
-root.mainloop()
+    [
+        sg.Text(
+            "Cloud Type:",
+            text_color="white"
+        )
+    ],
+
+    [
+        sg.Text(
+            "N/A",
+            key="-CLOUD-TYPE-",
+            font=("Arial", 20),
+            text_color="white"
+        )
+    ]
+]
+
+
+# =====================================
+# Main Window
+# =====================================
+window = sg.Window(
+    "CloudAI - Cloud Image Classifier",
+    layout,
+    size=(400, 650),
+    element_justification="center",
+    icon="GUIassets/logo.ico",
+    finalize=True
+)
+
+
+# =====================================
+# Event Loop
+# =====================================
+while True:
+
+    event, values = window.read()
+
+    if event == sg.WINDOW_CLOSED:
+        break
+
+    # =================================
+    # Select image
+    # =================================
+    elif event == "-SELECT-":
+
+        file_path = sg.popup_get_file(
+            "Select Cloud Image",
+            file_types=(
+                ("Image Files",
+                 "*.png;*.jpg;*.jpeg"),
+            ),
+            icon='GUIassets/logo.ico'
+        )
+
+        if not file_path:
+            continue
+
+        if not inference.check_image(file_path):
+
+            sg.popup_error(
+                "Please select a valid image file."
+            )
+
+            continue
+
+        current_image = file_path
+
+        # Enable Grad-CAM button
+        window["-GRADCAM-"].update(
+            disabled=False
+        )
+
+        # Update preview
+        window["-IMAGE-"].update(
+            data=image_to_bytes(
+                file_path,
+                (256, 256)
+            )
+        )
+
+        # Inference
+        cloud_type, confidence = (
+            model.inference(
+                file_path
+            )
+        )
+
+        confidence_percent = int(
+            confidence * 100
+        )
+
+        # Animate progress bar
+        window["-PROGRESS-"].update(0)
+
+        for i in range(
+                confidence_percent + 1):
+
+            window["-PROGRESS-"].update(i)
+            window.refresh()
+            time.sleep(0.01)
+
+        window["-CONFIDENCE-"].update(
+            f"Confidence: {confidence_percent}%"
+        )
+
+        window["-CLOUD-TYPE-"].update(
+            cloud_type
+        )
+
+    # =================================
+    # Grad-CAM Analysis
+    # =================================
+    elif event == "-GRADCAM-":
+
+        if current_image is None:
+            continue
+
+        cam = model.GradCAM(
+            current_image
+        )
+
+        cam_layout = [
+
+            [
+                sg.Text(
+                    "Grad-CAM Analysis",
+                    font=("Helvetica", 20),
+                    text_color="white"
+                )
+            ],
+
+            [
+                sg.Image(
+                    data=array_to_bytes(
+                        cam
+                    )
+                )
+            ],
+
+            [
+                sg.Button(
+                    "Close"
+                )
+            ]
+        ]
+
+        cam_window = sg.Window(
+            "CloudAI - Grad-CAM Analysis",
+            cam_layout,
+            modal=True,
+            element_justification="center",
+            icon="GUIassets/logo.ico"
+        )
+
+        while True:
+
+            e, v = cam_window.read()
+
+            if e in (
+                    sg.WINDOW_CLOSED,
+                    "Close"
+            ):
+                break
+
+        cam_window.close()
+
+
+window.close()
