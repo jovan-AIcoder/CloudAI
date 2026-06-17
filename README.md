@@ -4,11 +4,11 @@
 
 ![CloudAI Logo](GUIassets/logo_2.jpeg)
 
-## App Preview
+# App Preview
 
 ![CloudAI Preview](screenshot.png)
 
-## Description
+# Description
 > **"Clouds are not objects.
 > They are signatures of chaos in the atmosphere."**
 
