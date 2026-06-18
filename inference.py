@@ -7,54 +7,6 @@ from PIL import Image
 import tensorflow as tf
 import matplotlib.cm as cm
 
-
-# ==========================================
-# Convert image file to bytes
-# ==========================================
-def image_to_bytes(path, size=None):
-    img = Image.open(path).convert("RGB")
-
-    if size:
-        img = img.resize(size)
-
-    bio = io.BytesIO()
-    img.save(bio, format="PNG")
-
-    return bio.getvalue()
-
-
-# ==========================================
-# Resize image for preview
-# ==========================================
-def resize(image_path, size=(256, 256)):
-    img = Image.open(image_path).convert("RGB")
-
-    img.thumbnail(size)
-
-    new_img = Image.new(
-        "RGB",
-        size,
-        (255, 255, 255)
-    )
-
-    x = (size[0] - img.width) // 2
-    y = (size[1] - img.height) // 2
-
-    new_img.paste(
-        img,
-        (x, y)
-    )
-
-    buffer = io.BytesIO()
-
-    new_img.save(
-        buffer,
-        format="PNG"
-    )
-
-    return buffer.getvalue()
-
-
 # ==========================================
 # Check image extension
 # ==========================================

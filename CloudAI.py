@@ -7,7 +7,6 @@ import time
 
 MAX_VALUE = 100
 model = inference.LoadModel()
-
 current_image = None
 
 
