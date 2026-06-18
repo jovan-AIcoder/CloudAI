@@ -59,7 +59,7 @@ layout = [
     [
         sg.Text(
             "CloudAI",
-            font=("Arial", 24),
+            font=("Arial", 24, 'bold'),
             text_color="white"
         )
     ],
